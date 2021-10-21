@@ -58,8 +58,11 @@ abstract class SharedDataNode(val key: String, metaData: MetaData) : MessageNode
     if (message.sender!!.uuid == this.metaData.uuid) return;
     if (message.messageKey == "shared-data.$key.changed" || message.messageKey == "shared-data.$key.ready") {
       val changeMessage = SharedDataSyncMessage.fromRawMessage(message);
-      val shouldBeSync = changeMessage.dataVersion > this.dataVersion;
-      if (!shouldBeSync) return;
+      if (changeMessage.dataVersion == this.dataVersion) return;
+      if (changeMessage.dataVersion < this.dataVersion) {
+        this.notifySync();
+        return;
+      }
       this.data.clear();
       this.data.putAll(changeMessage.sharedData);
       this.dataVersion = changeMessage.dataVersion;

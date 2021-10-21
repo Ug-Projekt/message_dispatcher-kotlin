@@ -2,7 +2,6 @@ package Messages;
 
 
 import MessageDefinition
-import MessageDispatcher
 import MetaData
 import RawMessage
 import Schema.CustomObjectSchema;
