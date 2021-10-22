@@ -38,13 +38,15 @@ class SharedDataTest {
             dispatcherB.connect(dataNodeB);
             dispatcherC.connect(dataNodeC);
 
-            dataNodeA.data["name"] = "Hello";
-            dataNodeA.notifySync();
+            dataNodeA.applyChanges {
+                it["name"] = "Hello";
+            }
             expect(dataNodeC.data["name"], "Hello");
             expect(dataNodeB.data["name"], "Hello");
             dataNodeB.apply {
-                data["name"] = "changed"
-                notifySync();
+                applyChanges {
+                    data["name"] = "changed"
+                }
             }
             expect(dataNodeC.data["name"], "changed");
             expect(dataNodeA.data["name"], "changed");
@@ -52,8 +54,9 @@ class SharedDataTest {
             expect(dataNodeD.data["name"], "changed");
             connectionD.disconnect();
             dataNodeC.apply {
-                data["name"] = "Changed to C"
-                notifySync();
+                applyChanges {
+                    data["name"] = "Changed to C"
+                };
             }
             dispatcherB.connect(dataNodeD);
             expect(dataNodeD.data["name"], "Changed to C");

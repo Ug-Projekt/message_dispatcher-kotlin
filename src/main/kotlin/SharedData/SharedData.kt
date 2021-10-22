@@ -19,7 +19,7 @@ open class SharedDataSyncMessage(messageKey: String, val sharedData: Map<String,
       "data" to CustomObjectSchema(false, mapOf()),
     )))
     fun fromRawMessage(message: RawMessage): SharedDataSyncMessage {
-      val result = SharedDataSyncMessage(message.messageKey, message.data["data"] as Map<String, Any>, message.data["version"] as Int);
+      val result = SharedDataSyncMessage(message.messageKey, message.data["data"] as Map<String, Any>, (message.data["version"] as Number).toInt());
       result.sender = message.sender;
       return result;
     }
@@ -57,10 +57,10 @@ abstract class SharedDataNode(val key: String, metaData: MetaData) : MessageNode
   override fun handle(message: RawMessage) {
     if (message.sender!!.uuid == this.metaData.uuid) return;
     if (message.messageKey == "shared-data.$key.changed" || message.messageKey == "shared-data.$key.ready") {
-      val changeMessage = SharedDataSyncMessage.fromRawMessage(message);
+      val changeMessage = SharedDataSyncMessage.fromRawMessage(message)
       if (changeMessage.dataVersion == this.dataVersion) return;
       if (changeMessage.dataVersion < this.dataVersion) {
-        this.notifySync();
+        this._notifySync();
         return;
       }
       this.data.clear();
@@ -73,7 +73,11 @@ abstract class SharedDataNode(val key: String, metaData: MetaData) : MessageNode
       this.dispatch(message = SharedDataSyncMessage("shared-data.$key.ready", data, dataVersion));
     }
   }
-  fun notifySync(){
+  fun applyChanges(action: (data: HashMap<String, Any>) -> Unit) {
+    action(this.data)
+    this._notifySync()
+  }
+  private fun _notifySync(){
     dataVersion++;
     val message = SharedDataSyncMessage("shared-data.$key.changed", data, dataVersion);
     this.dispatch(message = message);
