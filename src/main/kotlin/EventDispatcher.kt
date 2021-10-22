@@ -138,7 +138,7 @@ abstract class MessageDispatcher(val metaData: MetaData) {
                     return@forEach;
                 }
                 try {
-                    messageNode.handle(message);
+                    messageNode.handle(message)
                 } catch (exception: Exception) {
                     if (message.sender!!.uuid == this._internalNode.metaData.uuid) throw exception
                     this._internalNode.dispatch(message = NodeErrorMessage(node.metaData, this.metaData, exception.toString(), exception.stackTraceToString(), "message-dispatcher.node.error"));

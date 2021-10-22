@@ -60,8 +60,8 @@ abstract class SharedDataNode(val key: String, metaData: MetaData) : MessageNode
       val changeMessage = SharedDataSyncMessage.fromRawMessage(message)
       if (changeMessage.dataVersion == this.dataVersion) return;
       if (changeMessage.dataVersion < this.dataVersion) {
-        this._notifySync();
-        return;
+        _notifySync(withIncrement = false)
+        return
       }
       this.data.clear();
       this.data.putAll(changeMessage.sharedData);
@@ -77,8 +77,8 @@ abstract class SharedDataNode(val key: String, metaData: MetaData) : MessageNode
     action(this.data)
     this._notifySync()
   }
-  private fun _notifySync(){
-    dataVersion++;
+  private fun _notifySync(withIncrement: Boolean = true){
+    if (withIncrement) dataVersion++;
     val message = SharedDataSyncMessage("shared-data.$key.changed", data, dataVersion);
     this.dispatch(message = message);
   }
