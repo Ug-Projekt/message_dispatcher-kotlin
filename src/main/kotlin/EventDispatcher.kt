@@ -120,7 +120,8 @@ abstract class MessageDispatcher(val metaData: MetaData) {
         var message = _message
         val _sourceMessage = message;
         message = message.cloneSelf();
-        if (node !is BridgeNode) message.sender = node.metaData;
+        message.sender = node.metaData
+//        if (node is BridgeNode) message.sender = _sourceMessage.sender else message.sender = node.metaData;
 
         val result = message.definition.schema.validate("yourMessage", message.data);
         if (!result.passed) throw MessageValidationException("Message validation failed because your message schema should be '${result.message}'");
@@ -206,6 +207,7 @@ fun Collection<Any>.deepClone(): Array<Any> {
         }
         if (element is Map<*, *>) {
             _list.add((element as Map<String, Any>).deepClone());
+            return@forEach
         }
         _list.add(element);
     }
