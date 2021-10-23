@@ -120,7 +120,7 @@ abstract class MessageDispatcher(val metaData: MetaData) {
         var message = _message
         val _sourceMessage = message;
         message = message.cloneSelf();
-        message.sender = node.metaData;
+        if (node !is BridgeNode) message.sender = node.metaData;
 
         val result = message.definition.schema.validate("yourMessage", message.data);
         if (!result.passed) throw MessageValidationException("Message validation failed because your message schema should be '${result.message}'");
