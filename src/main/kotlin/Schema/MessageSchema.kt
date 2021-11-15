@@ -147,6 +147,7 @@ class CustomObjectSchema(nullable: Boolean, val properties: Map<String, ObjectSc
     val isMap = value is Map<*, *> || value is Map<*, *>?;
     if (!isMap) return ValidationResult.error("$propertyName.runtimeType == ${if (this.nullable) "Map<String, dynamic>?" else "Map<String, dynamic>"} ");
     if (this.nullable == false && value == null) return ValidationResult.error("$propertyName != null");
+    if (this.nullable && value == null) return ValidationResult.passed();
     val map = value as Map<*, *>;
     var result: ValidationResult? = null
     for (key in this.properties.keys) {
