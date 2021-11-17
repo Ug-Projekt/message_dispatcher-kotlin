@@ -8,7 +8,7 @@ class CallMEthod_test {
     val dispatcher = _MyDispatcher();
 
     group("Test method call") {
-      val methodCallerA = MethodCallBridge(MetaData(uuid = "6b644eb6-42cd-11ec-a581-cb31a87005eb", name = "MyBridge", author = "Dream-Lab software technologies"), mapOf(
+      val methodCallerA = MethodCallBridge("MyCallBridge", MetaData(uuid = "6b644eb6-42cd-11ec-a581-cb31a87005eb", name = "MyBridge", author = "Dream-Lab software technologies"), mapOf(
         "hello" to { args, setResult ->
           this.callMethod("hi", mapOf("message" to args["helloMessage"]!!)) { error, result ->
             setResult(mapOf(
@@ -17,7 +17,7 @@ class CallMEthod_test {
           }
         }
       ))
-      val methodCallerB = MethodCallBridge(MetaData(uuid = "8d72f73c-42cd-11ec-ac43-3bf7b79a3bf8", name = "MyBridge", author = "Dream-Lab software technologies"), mapOf(
+      val methodCallerB = MethodCallBridge("MyCallBridge", MetaData(uuid = "8d72f73c-42cd-11ec-ac43-3bf7b79a3bf8", name = "MyBridge", author = "Dream-Lab software technologies"), mapOf(
         "hi" to {args, setResult ->
           setResult(mapOf(
             "result" to "yes",

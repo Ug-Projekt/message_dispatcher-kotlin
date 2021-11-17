@@ -38,7 +38,7 @@ open class MessageDefinition(val name: String, val version: Double, val schema: 
 
 open class RawMessage(val messageKey: String, val definition: MessageDefinition, val id: String? = UUID.randomUUID().toString()) {
     var sender: MetaData? = null
-    val data = HashMap<String, Any>()
+    val data = HashMap<String, Any?>()
     fun cloneSelf(): RawMessage {
         val copyed = RawMessage(messageKey = messageKey, definition = definition, id = id)
         val cloned = this.data.deepClone();
@@ -182,31 +182,35 @@ class _DispatcherInternalNode(metaData: MetaData) : MessageNode(metaData, mapOf(
     }
 }
 
-fun Map<String, Any>.deepClone(): Map<String, Any> {
-    val _map = HashMap<String, Any>()
+fun Map<String, Any?>.deepClone(): Map<String, Any?> {
+    val _map = HashMap<String, Any?>()
     this.forEach { key, value ->
         if (value is Collection<*>) {
-            _map[key] = (value as Collection<Any>).deepClone();
+            (value as Collection<Any?>?)?.let {
+                _map[key] = it.deepClone();
+            }
             return@forEach;
         }
         if (value is Map<*, *>) {
-            _map[key.toString()] = (value as Map<String, Any>).deepClone();
+            (value as Map<String, Any?>?)?.let {
+                _map[key] = it.deepClone();
+            }
             return@forEach;
         }
-        _map[key.toString()] = value;
+        _map[key.toString()] = value
     }
     return _map;
 }
 
-fun Collection<Any>.deepClone(): Array<Any> {
-    val _list = ArrayList<Any>()
+fun Collection<Any?>.deepClone(): Array<Any?> {
+    val _list = ArrayList<Any?>()
     this.forEach { element ->
         if (element is Collection<*>) {
-            _list.add((element as Collection<Any>).deepClone());
+            _list.add((element as Collection<Any?>).deepClone());
             return@forEach;
         }
         if (element is Map<*, *>) {
-            _list.add((element as Map<String, Any>).deepClone());
+            _list.add((element as Map<String, Any?>).deepClone());
             return@forEach
         }
         _list.add(element);

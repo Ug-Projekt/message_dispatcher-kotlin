@@ -42,12 +42,12 @@ class MethodCallResponse(messageKey: String, val requestId: String, val methodNa
 
 //typealias MethodCallHandler = Future<Map<String, dynamic>> Function(MethodCallBridge bridge, Map<String, dynamic> args);
 typealias MethodCallHandler = MethodCallBridge.(argument: Map<String, Any>, setResult: (result: Map<String, Any>) -> Unit) -> Unit
-class MethodCallBridge(metaData: MetaData, handlers: Map<String, MethodCallHandler>) : MessageNode(metaData, mapOf(
-    "MethodCall.Call-${metaData.name}.Request" to MethodCallRequest.DEFINITION,
-    "MethodCall.Call-${metaData.name}.Response" to MethodCallResponse.DEFINITION,
+class MethodCallBridge(val key: String, metaData: MetaData, handlers: Map<String, MethodCallHandler>) : MessageNode(metaData, mapOf(
+    "MethodCall.${key}.Request" to MethodCallRequest.DEFINITION,
+    "MethodCall.${key}.Response" to MethodCallResponse.DEFINITION,
 ), mapOf(
-    "MethodCall.Call-${metaData.name}.Request" to MethodCallRequest.DEFINITION,
-    "MethodCall.Call-${metaData.name}.Response" to MethodCallResponse.DEFINITION,
+    "MethodCall.${key}.Request" to MethodCallRequest.DEFINITION,
+    "MethodCall.${key}.Response" to MethodCallResponse.DEFINITION,
 )) {
     val _handlers: MutableMap<String, MethodCallHandler> = mutableMapOf();
     val _request: MutableMap<String, (error: Any?, argument: Map<String, Any>?) -> Unit> = mutableMapOf();
@@ -58,8 +58,8 @@ class MethodCallBridge(metaData: MetaData, handlers: Map<String, MethodCallHandl
 
     override fun handle(message: RawMessage) {
         if (message.sender?.uuid == this.metaData.uuid) return;
-        val responseKey = "MethodCall.Call-${metaData.name}.Response";
-        val requestKey = "MethodCall.Call-${metaData.name}.Request";
+        val responseKey = "MethodCall.${key}.Response";
+        val requestKey = "MethodCall.${key}.Request";
         if (message.messageKey == requestKey) {
             val request = MethodCallRequest.fromMessage(message);
             val handler = this._handlers[request.methodName]
@@ -88,16 +88,17 @@ class MethodCallBridge(metaData: MetaData, handlers: Map<String, MethodCallHandl
                     )
                 );
             }
-            if (handler == null) this.dispatch(
-                message = MethodCallResponse(
-                    responseKey,
-                    requestId = message.id!!,
-                    methodName = request.methodName,
-                    arguments = request.arguments,
-                    returns = null,
-                    error = "handler ${request.methodName} is not found"
-                )
-            );
+            //Because the kotlin is only one side, another side is dart, web, mybe this method not exists on kotlin side but it may exists dart side so we cannot throw an exception if handler is not found.
+//            if (handler == null) this.dispatch(
+//                message = MethodCallResponse(
+//                    responseKey,
+//                    requestId = message.id!!,
+//                    methodName = request.methodName,
+//                    arguments = request.arguments,
+//                    returns = null,
+//                    error = mapOf("error" to "handler ${request.methodName} is not found")
+//                )
+//            );
             return;
         }
         if (message.messageKey == responseKey) {
@@ -116,7 +117,7 @@ class MethodCallBridge(metaData: MetaData, handlers: Map<String, MethodCallHandl
 
     fun callMethod(name: String, argument: Map<String, Any>, action: (error: Any?, args: Map<String, Any>?) -> Unit) {
 //    timeout ??= Duration(seconds: 10);
-        val message = MethodCallRequest("MethodCall.Call-${this.metaData.name}.Request", methodName = name, arguments = argument);
+        val message = MethodCallRequest("MethodCall.${this.key}.Request", methodName = name, arguments = argument);
         this._request[message.id!!] = action
         this.dispatch(message = message);
     }
